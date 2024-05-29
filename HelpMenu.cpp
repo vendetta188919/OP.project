@@ -8,26 +8,6 @@ const unsigned int c_uHeightWidget = 300;
 
 
 
-
-//void MenuOfProgram() {
-//    cout << "\t\t\t------------<<<<<<<<< << МЕНЮ ПРОГРАММЫ >> >>>>>>>>>------------" << endl;
-//    cout << "\t\t\t+--------------------------------------------------------------+" << endl;
-//    cout << "\t\t\t|                                                              |" << endl;
-//    cout << "\t\t\t|        1  - Вывод страховых полисов в виде таблицы           |" << endl;
-//    cout << "\t\t\t|        2  - Добавление новой записи                          |" << endl;
-//    cout << "\t\t\t|        3  - Поиск по запросу                                 |" << endl;
-//    cout << "\t\t\t|        4  - Удаление записи                                  |" << endl;
-//    cout << "\t\t\t|        5  - Сортировка                                       |" << endl;
-//    cout << "\t\t\t|        6  - Процентная соотношение страховых программ        |" << endl;
-//    cout << "\t\t\t|        7  - Формирование страховых полисов                   |" << endl;
-//    cout << "\t\t\t|        0  - Выход                                            |" << endl;
-//    cout << "\t\t\t|                                                              |" << endl;
-//    cout << "\t\t\t+--------------------------------------------------------------+" << endl;
-//    cout << endl;
-//    cout << "Введите необходимый пункт меню >> ";
-//}
-
-
 HelpMenu::HelpMenu(QWidget* pParent)
     : QDialog{pParent}
 {
@@ -74,8 +54,6 @@ QHBoxLayout* HelpMenu::makePairWidgets(QWidget* pLeftWidget, QWidget* pRightWidg
 QLabel* HelpMenu::makeInfoLabel(const QVariant& crVar)
 {
     QLabel* pLbl{new QLabel()};
-
-    QColor color = crVar.value<QColor>();
 
     if(color.isValid())
     {
