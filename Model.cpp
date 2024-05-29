@@ -23,7 +23,7 @@ QVariant Model::data(const QModelIndex& crIndex, int iRole) const
 
     if(crIndex.isValid())
     {
-        Keys key = static_cast<Keys>(crIndex.column());
+        //Keys key = static_cast<Keys>(crIndex.column());
 
         switch (iRole)
         {
@@ -113,27 +113,6 @@ std::vector<std::pair<QString, unsigned int> > Model::getPieValues()
     }
 
     return vecValues;
-}
-
-QString Model::getTypeProgramm(unsigned int uType)
-{
-    switch(uType)
-    {
-    case 1:
-    {
-        return QString(QString::fromLocal8Bit("Эконом"));
-    }
-    case 2:
-    {
-        return QString(QString::fromLocal8Bit("Стандарт"));
-    }
-    case 3:
-    {
-        return QString(QString::fromLocal8Bit("Премиум"));
-    }
-    default:
-        return QString("");
-    }
 }
 
 bool Model::setData(const QModelIndex& index, const QVariant& rValue, int iRole)
@@ -284,11 +263,11 @@ std::pair<QString,int> Model::getDisplayNameForType(Keys key, unsigned int iValu
         {
         case typeHouse::house:
         {
-            return {QString(QString::fromLocal8Bit("Квартира")), 1};
+            return {QString(QString::fromLocal8Bit("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ")), 1};
         }
         case typeHouse::apartment:
         {
-            return {QString(QString::fromLocal8Bit("Дом")), 2};
+            return {QString(QString::fromLocal8Bit("пїЅпїЅпїЅ")), 2};
         }
         default:
             break;
@@ -301,11 +280,11 @@ std::pair<QString,int> Model::getDisplayNameForType(Keys key, unsigned int iValu
         {
         case typeProperty::wood:
         {
-            return {QString(QString::fromLocal8Bit("Деревянный")), 1};
+            return {QString(QString::fromLocal8Bit("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ")), 1};
         }
         case typeProperty::stone:
         {
-            return {QString(QString::fromLocal8Bit("Каменный")), 2};
+            return {QString(QString::fromLocal8Bit("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ")), 2};
         }
         default:
             break;
@@ -318,15 +297,15 @@ std::pair<QString,int> Model::getDisplayNameForType(Keys key, unsigned int iValu
         {
         case typeProgramm::econom:
         {
-            return {QString(QString::fromLocal8Bit("Эконом")), 1};
+            return {QString(QString::fromLocal8Bit("пїЅпїЅпїЅпїЅпїЅпїЅ")), 1};
         }
         case typeProgramm::standart:
         {
-            return {QString(QString::fromLocal8Bit("Стандарт")), 2};
+            return {QString(QString::fromLocal8Bit("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ")), 2};
         }
         case typeProgramm::premium:
         {
-            return {QString(QString::fromLocal8Bit("Премиум")), 3};
+            return {QString(QString::fromLocal8Bit("пїЅпїЅпїЅпїЅпїЅпїЅпїЅ")), 3};
         }
         default:
             break;

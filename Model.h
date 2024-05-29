@@ -33,8 +33,8 @@ public:
 
     QModelIndex findFromKey(const QString& crQstrData, Keys key);
 
-    void findMin();
-    void findMax();
+    //void findMin();
+    //void findMax();
 
 signals:
     void minValue(int);
