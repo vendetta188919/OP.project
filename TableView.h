@@ -13,8 +13,6 @@ public:
 
     QString getHeaderFromColumn(int iColumn);
     void removeRowById(int iId);
-    void findMin();
-    void findMax();
     bool findFromKey(const QString& crQstrData, Keys key);
 
     QString getModelData (int iRow, int rColumn) const;

@@ -34,16 +34,6 @@ void TableView::removeRowById(int iId)
         QMessageBox::warning(this, QString::fromLocal8Bit("��������!"), QString::fromLocal8Bit("����� ") + QString("%1").arg(iId) + QString::fromLocal8Bit(" �� ������"));
 }
 
-void TableView::findMin()
-{
-    m_pModel->findMin();
-}
-
-void TableView::findMax()
-{
-    m_pModel->findMax();
-}
-
 bool TableView::findFromKey(const QString& crQstrData, Keys key)
 {
     QModelIndex idx = m_pModel->findFromKey(crQstrData, key);
