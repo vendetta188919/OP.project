@@ -9,13 +9,14 @@
 PieChart::PieChart(const std::vector<std::pair<QString, unsigned int> >& crVecValues, QWidget* pParent)
     : QDialog{pParent}
 {
+    resize(800, 800);
     QHBoxLayout* pMainLayout{new QHBoxLayout()};
 
     pMainLayout->addWidget(makePieChart(crVecValues));
 
-    resize(600, 600);
+    
 
-    setWindowTitle(QString::fromLocal8Bit("Круговая диаграмма"));
+    setWindowTitle(QString::fromLocal8Bit("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ"));
 
     setLayout(pMainLayout);
 }
@@ -25,7 +26,7 @@ QChartView * PieChart::makePieChart(const std::vector<std::pair<QString, unsigne
     QPieSeries* series = new QPieSeries();
 
     if(crVecValues.empty())
-        series->append(QString::fromLocal8Bit("Пусто"), 1);
+        series->append(QString::fromLocal8Bit("пїЅпїЅпїЅпїЅпїЅ"), 1);
 
     for(const auto& pair : crVecValues)
         series->append(pair.first, pair.second);
@@ -35,8 +36,8 @@ QChartView * PieChart::makePieChart(const std::vector<std::pair<QString, unsigne
 
     for(auto slice : series->slices())
     {
+         slice->setLabelBrush(QBrush(Qt::Black));
         slice->setLabel(slice->label() + QString(" %1%").arg(100 * slice->percentage(), 0, 'f', 1));
-        slice->setLabelBrush(QBrush(Qt::white));
     }
 
     QChart* chart = new QChart();
