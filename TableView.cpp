@@ -31,7 +31,7 @@ TableView::TableView()
 void TableView::removeRowById(int iId)
 {
     if(!m_pModel->removeFromPolicyId(iId))
-        QMessageBox::warning(this, QString::fromLocal8Bit("Внимание!"), QString::fromLocal8Bit("Полис ") + QString("%1").arg(iId) + QString::fromLocal8Bit(" не найден"));
+        QMessageBox::warning(this, QString::fromLocal8Bit("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ!"), QString::fromLocal8Bit("пїЅпїЅпїЅпїЅпїЅ ") + QString("%1").arg(iId) + QString::fromLocal8Bit(" пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ"));
 }
 
 void TableView::findMin()
@@ -85,7 +85,7 @@ QString TableView::getHeaderFromColumn(int iColumn)
 
 void TableView::onClickHeader(int iColumn)
 {
-    if(iColumn == 3 || iColumn == 9 || iColumn == 10)
+    if(iColumn == 4 || iColumn == 8 || iColumn == 12)
     {
         if(m_pProxyModel->sortOrder() == Qt::AscendingOrder)
             m_pProxyModel->sort(iColumn, Qt::DescendingOrder);
