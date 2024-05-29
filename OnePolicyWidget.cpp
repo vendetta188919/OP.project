@@ -1,10 +1,10 @@
 ﻿#include "OnePolicyWidget.h"
 
-const unsigned int c_uWidgth = 20;
-const unsigned int c_uHeight = 20;
-const unsigned int c_uFont = 10;
-const unsigned int c_uWidthWidget = 300;
-const unsigned int c_uHeightWidget = 300;
+const unsigned int c_uWidgth = 40;
+const unsigned int c_uHeight = 40;
+const unsigned int c_uFont = 20;
+const unsigned int c_uWidthWidget = 500;
+const unsigned int c_uHeightWidget = 500;
 
 OnePolicyWidget::OnePolicyWidget(QWidget* pParent)
     : QDialog{pParent}
