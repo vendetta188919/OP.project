@@ -13,7 +13,7 @@ class ItemDelegate : public QItemDelegate
 {
     Q_OBJECT
 public:
-    explicit ItemDelegate(QObject *parent = 0);
+    ItemDelegate(QObject *parent = nullptr);
 
 protected:
     QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& = QStyleOptionViewItem(), const QModelIndex& = QModelIndex()) const;

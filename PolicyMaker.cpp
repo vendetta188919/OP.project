@@ -11,8 +11,8 @@
 
 PolicyMaker::PolicyMaker(const std::vector<int> &crVecId, QWidget* pParent)
     : QDialog{pParent},
-      m_pCreateBtn{new QPushButton(QString::fromLocal8Bit("Создать"))},
-      m_pCancelBtn{new QPushButton(QString::fromLocal8Bit("Отмена"))},
+      m_pCreateBtn{new QPushButton(QString::fromLocal8Bit("пїЅпїЅпїЅпїЅпїЅпїЅпїЅ"))},
+      m_pCancelBtn{new QPushButton(QString::fromLocal8Bit("пїЅпїЅпїЅпїЅпїЅпїЅ"))},
       m_vIdPolicy{crVecId}
 {
     initGui();
@@ -25,19 +25,21 @@ void PolicyMaker::initGui()
 
     std::map<Keys, std::string> vTypes = Policy::getTypes();
 
+
+    QHBoxLayout* pBtnsLayout{new QHBoxLayout()};
+
+    pBtnsLayout->addWidget(m_pCancelBtn);
+    pBtnsLayout->addWidget(m_pCreateBtn);
+
+
+    pMainLayout->addLayout(pBtnsLayout);
+    
     for(const auto& crStr : vTypes)
     {
         pMainLayout->addLayout(makePairWidgets(QString::fromStdString(crStr.second), crStr.first));
     }
 
-    QHBoxLayout* pBtnsLayout{new QHBoxLayout()};
-
-    pBtnsLayout->addWidget(m_pCreateBtn);
-    pBtnsLayout->addWidget(m_pCancelBtn);
-
-    pMainLayout->addLayout(pBtnsLayout);
-
-    setWindowFilePath(QString::fromLocal8Bit("Создание нового полиса"));
+    setWindowFilePath(QString::fromLocal8Bit("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ"));
 
     setLayout(pMainLayout);
 }
@@ -113,7 +115,7 @@ void PolicyMaker::onCreate()
             if(strData.empty())
             {
                 bEmptyValue = true;
-                QMessageBox::warning(this, QString::fromLocal8Bit("Внимание!"), QString::fromLocal8Bit("Значения не могут быть пустыми!"));
+                QMessageBox::warning(this, QString::fromLocal8Bit("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ!"), QString::fromLocal8Bit("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ!"));
                 break;
             }
         }
@@ -126,8 +128,8 @@ void PolicyMaker::onCreate()
     }
     else
     {
-        QMessageBox::warning(this, QString::fromLocal8Bit("Внимание!"), QString::fromLocal8Bit("Невозможно создать.\n"
-                                                 "Номер полиса ") + QString("%1").arg(iUniqueId) + QString::fromLocal8Bit(" не уникальный."));
+        QMessageBox::warning(this, QString::fromLocal8Bit("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ!"), QString::fromLocal8Bit("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ.\n"
+                                                 "пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ ") + QString("%1").arg(iUniqueId) + QString::fromLocal8Bit(" пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ."));
     }
 }
 
@@ -267,21 +269,21 @@ std::vector<QString> PolicyMaker::getDescriptionsBox(Keys key) const
     {
     case Keys::key_typeOfHouse:
     {
-        vRes.push_back(QString::fromLocal8Bit("Квартира")); /// 1
-        vRes.push_back(QString::fromLocal8Bit("Дом")); /// 2
+        vRes.push_back(QString::fromLocal8Bit("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ")); /// 1
+        vRes.push_back(QString::fromLocal8Bit("пїЅпїЅпїЅ")); /// 2
         break;
     }
     case Keys::key_typeOfProperty:
     {
-        vRes.push_back(QString::fromLocal8Bit("Деревянный")); /// 1
-        vRes.push_back(QString::fromLocal8Bit("Каменный")); /// 2
+        vRes.push_back(QString::fromLocal8Bit("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ")); /// 1
+        vRes.push_back(QString::fromLocal8Bit("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ")); /// 2
         break;
     }
     case Keys::key_insuranceProgram:
     {
-        vRes.push_back(QString::fromLocal8Bit("Эконом"));    /// 1
-        vRes.push_back(QString::fromLocal8Bit("Стандарт"));  /// 2
-        vRes.push_back(QString::fromLocal8Bit("Премиум"));   /// 3
+        vRes.push_back(QString::fromLocal8Bit("пїЅпїЅпїЅпїЅпїЅпїЅ"));    /// 1
+        vRes.push_back(QString::fromLocal8Bit("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ"));  /// 2
+        vRes.push_back(QString::fromLocal8Bit("пїЅпїЅпїЅпїЅпїЅпїЅпїЅ"));   /// 3
     }
     default:
         break;
