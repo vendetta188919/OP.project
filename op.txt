@@ -1,0 +1,956 @@
+#include <windows.h>
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <iomanip>
+#include <sstream>
+#include <unordered_map>
+
+
+using namespace std;
+
+// Определение структуры Policy для хранения информации о страховом полисе.
+struct Policy {
+    int Id{};                     // ID полиса, инициализирован нулем.
+    string fullName;              // Полное имя владельца полиса.
+    string telNumber;             // Номер телефона владельца.
+    int typeOfHouse{};            // Тип жилья (например, квартира=1, дом=2), инициализирован нулем.
+    string address;               // Адрес зарегистрированной недвижимости.
+    int typeOfProperty{};         // Тип свойства (кирпичное=1, деревянное=2), инициализирован нулем.
+    int yearOfConstruction{};     // Год постройки объекта недвижимости, инициализирован нулем.
+    int housingArea{};            // Площадь жилья, инициализирована нулем.
+    int insuranceProgram{};       // Тип страховой программы (например, Эконом=1, Стандарт=2, Премиум=3), инициализирован нулем.
+    int insuranceAmount{};        // Сумма страхования, инициализирована нулем.
+    int insurancePremium{};       // Страховая премия, инициализирована нулем.
+    string insurancePeriod;       // Срок страхования.
+};
+
+Policy temp;                      // Создание временного объекта структуры Policy для удаления
+
+const int MAX_POLICIES = 100;     // Определение максимального количества полисов, которые могут быть обработаны программой.
+
+
+//Загрузка данных страхователей из файла
+// Загружает данные о страховых полисах из файла и сохраняет их в массив структур Policy.
+int loadPoliciesFromFile(const string& filename, Policy policies[], int maxPolicies) {
+    ifstream file(filename); // Открыть файл для чтения
+    
+    string line;             // Переменная для хранения считываемой строки из файла
+    int count = 0;           // Переменная для подсчета успешно считанных полисов
+
+    // Пока есть строки в файле и не достигнуто максимальное количество полисов
+    while (getline(file, line) && count < maxPolicies) {
+        stringstream ss(line); // Создать stringstream для извлечения полей из строки
+        string field;          // Переменная для временного хранения каждого поля
+
+        // Извлечь ID полиса и сохранить в соответствующем поле текущего объекта Policy
+        getline(ss, field, ',');
+        policies[count].Id = stoi(field);
+
+        // Извлечь полное имя владельца полиса и сохранить в соответствующем поле текущего объекта Policy
+        getline(ss, policies[count].fullName, ',');
+
+        // Извлечь номер телефона владельца полиса и сохранить в соответствующем поле текущего объекта Policy
+        getline(ss, policies[count].telNumber, ',');
+
+        // Извлечь тип жилья и сохранить в соответствующем поле текущего объекта Policy
+        getline(ss, field, ',');
+        policies[count].typeOfHouse = stoi(field);
+
+        // Извлечь адрес недвижимости и сохранить в соответствующем поле текущего объекта Policy
+        getline(ss, policies[count].address, ',');
+
+        // Извлечь тип свойства и сохранить в соответствующем поле текущего объекта Policy
+        getline(ss, field, ',');
+        policies[count].typeOfProperty = stoi(field);
+
+        // Извлечь год постройки недвижимости и сохранить в соответствующем поле текущего объекта Policy
+        getline(ss, field, ',');
+        policies[count].yearOfConstruction = stoi(field);
+
+        // Извлечь площадь жилья и сохранить в соответствующем поле текущего объекта Policy
+        getline(ss, field, ',');
+        policies[count].housingArea = stoi(field);
+
+        // Извлечь тип страховой программы и сохранить в соответствующем поле текущего объекта Policy
+        getline(ss, field, ',');
+        policies[count].insuranceProgram = stoi(field);
+
+        // Извлечь сумму страхования и сохранить в соответствующем поле текущего объекта Policy
+        getline(ss, field, ',');
+        policies[count].insuranceAmount = stoi(field);
+
+        // Извлечь страховую премию и сохранить в соответствующем поле текущего объекта Policy
+        getline(ss, field, ',');
+        policies[count].insurancePremium = stoi(field);
+
+        // Извлечь срок страхования и сохранить в соответствующем поле текущего объекта Policy
+        getline(ss, policies[count].insurancePeriod);
+
+        count++; // Увеличить счетчик успешно считанных полисов
+    }
+
+    return count; // Вернуть количество успешно считанных полисов
+}
+
+//Пункты меню программы
+void MenuOfProgram() {
+    cout << "\t\t\t------------<<<<<<<<< << МЕНЮ ПРОГРАММЫ >> >>>>>>>>>------------" << endl;
+    cout << "\t\t\t+--------------------------------------------------------------+" << endl;
+    cout << "\t\t\t|                                                              |" << endl;
+    cout << "\t\t\t|        1  - Вывод страховых полисов в виде таблицы           |" << endl;
+    cout << "\t\t\t|        2  - Добавление новой записи                          |" << endl;
+    cout << "\t\t\t|        3  - Поиск по запросу                                 |" << endl;
+    cout << "\t\t\t|        4  - Удаление записи                                  |" << endl;
+    cout << "\t\t\t|        5  - Сортировка                                       |" << endl;
+    cout << "\t\t\t|        6  - Процентная соотношение страховых программ        |" << endl;
+    cout << "\t\t\t|        7  - Формирование страховых полисов                   |" << endl;
+    cout << "\t\t\t|        0  - Выход                                            |" << endl;
+    cout << "\t\t\t|                                                              |" << endl;
+    cout << "\t\t\t+--------------------------------------------------------------+" << endl;
+    cout << endl;
+    cout << "Введите необходимый пункт меню >> ";
+}
+
+//Функция отвечает за вывод строки, состоящей из символов "+", "-" и переноса строки, представляющих собой рамку
+void printHeaderFooter(int colWidths[], int numCols) {
+    for (int i = 0; i < numCols; i++) {
+        cout << "+";
+        cout << string(colWidths[i], '-');
+    }
+    cout << "+" << endl;
+}
+
+//Функция служит обёрткой над функцией printHeaderFooter и используется для вывода разделителя строк в табличном представлении
+void printRowDivider(int colWidths[], int numCols) {
+    printHeaderFooter(colWidths, numCols);
+}
+
+//Вывод таблицы с полисами страхователей
+void TableOfData(Policy* policies, int numPolicies) {
+    int colWidths[] = { 9, 27, 18, 13, 21, 14, 14, 15, 13, 17, 18, 18 }; //массив, содержащий ширину каждого столбца таблицы
+    int numCols = sizeof(colWidths) / sizeof(colWidths[0]); //количество столбцов таблицы
+    printHeaderFooter(colWidths, numCols);
+    cout << "|"
+        << setw(colWidths[0]) << "ID Полиса" << "|"
+        << setw(colWidths[1]) << "ФИО" << "|"
+        << setw(colWidths[2]) << "Телефон" << "|"
+        << setw(colWidths[3]) << "Вид жилья" << "|"
+        << setw(colWidths[4]) << "Адрес" << "|"
+        << setw(colWidths[5]) << "Тип имущества" << "|"
+        << setw(colWidths[6]) << "Год постройки" << "|"
+        << setw(colWidths[7]) << "Площадь жилья" << "|"
+        << setw(colWidths[8]) << "Стр.Программа" << "|"
+        << setw(colWidths[9]) << "Стр.Сумма" << "|"
+        << setw(colWidths[10]) << "Стр.Премия" << "|"
+        << setw(colWidths[11]) << "Срок страхования" << "|"
+        << endl;
+    printHeaderFooter(colWidths, numCols);
+    for (int i = 0; i < numPolicies; i++) {
+        cout << "|"
+            << setw(colWidths[0]) << policies[i].Id << "|"
+            << setw(colWidths[1]) << policies[i].fullName << "|"
+            << setw(colWidths[2]) << policies[i].telNumber << "|"
+            << setw(colWidths[3]) << policies[i].typeOfHouse << "|"
+            << setw(colWidths[4]) << policies[i].address << "|"
+            << setw(colWidths[5]) << policies[i].typeOfProperty << "|"
+            << setw(colWidths[6]) << policies[i].yearOfConstruction << "|"
+            << setw(colWidths[7]) << policies[i].housingArea << "|"
+            << setw(colWidths[8]) << policies[i].insuranceProgram << "|"
+            << setw(colWidths[9]) << policies[i].insuranceAmount << "|"
+            << setw(colWidths[10]) << policies[i].insurancePremium << "|"
+            << setw(colWidths[11]) << policies[i].insurancePeriod << "|"
+            << endl;
+        printRowDivider(colWidths, numCols);
+    }
+}
+
+//Функция осуществляет поиск и удаление полиса из массива policies с использованием переданного идентификатора политики policyId.
+//Функция также принимает по ссылке общее количество политик count, чтобы иметь возможность его обновлять
+bool deletePolicyById(Policy* policies, int& count, int policyId) {
+    int indexToRemove = -1;
+    for (int i = 0; i < count; i++) {
+        if (policies[i].Id == policyId) {
+            indexToRemove = i;
+            break;
+        }
+    }
+    if (indexToRemove == -1) {
+        return false;
+    }
+    for (int i = indexToRemove; i < count - 1; i++) {
+        policies[i] = policies[i + 1];
+    }
+    count--;
+    return true;
+}
+
+//Вспомогательная функция, которая взаимодействует с пользователем для удаления полиса. Она запрашивает у пользователя идентификатор полиса для удаления и вызывает deletePolicyById, чтобы попытаться удалить полис из массива. 
+//Результат операции сообщается пользователю
+void DeletePolicy(Policy* policies, int& count) {
+    int policyId;
+    cout << "Введите ID полиса для удаления: ";
+    cin >> policyId;
+    if (deletePolicyById(policies, count, policyId)) {
+        cout << "Полис с ID " << policyId << " был успешно удален." << endl;
+        system("cls");
+    }
+    else {
+        cout << "Полис с ID " << policyId << " не найден." << endl;
+    }
+}
+
+// Функция для сортировки массива страховых полисов по типу имущества в возрастающем порядке
+void SortTypeAZ(Policy* policies, int numPolicies) {
+    // Внешний цикл для итерации по всем элементам массива.
+    for (int i = 0; i < numPolicies; i++) {
+        // Внутренний цикл для сравнения текущего элемента с последующими и поиска наименьшего значения для выставления его на текущую позицию.
+        for (int j = i + 1; j < numPolicies; j++) {
+            // Если тип имущества текущего полиса больше (по значению), чем следующий, они меняются местами.
+            if (policies[i].typeOfProperty > policies[j].typeOfProperty) {
+                // Происходит обмен элементов местами через временный объект структуры Policy.
+                temp = policies[j];
+                policies[j] = policies[i];
+                policies[i] = temp;
+            }
+        }
+    }
+    cout << "Данные отсортированы." << endl;
+}
+
+// Функция для сортировки массива страховых полисов по типу имущества в убывающем порядке
+void SortTypeZA(Policy* policies, int numPolicies) {
+    // Внешний цикл для итерации по всем элементам массива.
+    for (int i = 0; i < numPolicies; i++) {
+        // Внутренний цикл для сравнения текущего элемента с последующими и поиска наибольшего значения для выставления его на текущую позицию.
+        for (int j = i + 1; j < numPolicies; j++) {
+            // Если тип имущества текущего полиса меньше (по значению), чем следующий, они меняются местами.
+            if (policies[i].typeOfProperty < policies[j].typeOfProperty) {
+                // Происходит обмен элементов местами через временный объект структуры Policy.
+                temp = policies[j];
+                policies[j] = policies[i];
+                policies[i] = temp;
+            }
+        }
+    }
+    cout << "Данные отсортированы." << endl;
+}
+
+//Сортировка страховой суммы по возрастанию выполняется аналогично
+void SortAmountAZ(Policy* policies, int numPolicies) {
+    for (int i = 0; i < numPolicies; i++) {
+        for (int j = i + 1; j < numPolicies; j++) {
+            if (policies[i].insuranceAmount > policies[j].insuranceAmount) {
+                temp = policies[j];
+                policies[j] = policies[i];
+                policies[i] = temp;
+            }
+        }
+    }
+    cout << "Данные отсортированы." << endl;
+}
+
+//Сортировка страховой суммы по убыванию выполняется аналогично 
+void SortAmountZA(Policy* policies, int numPolicies) {
+    for (int i = 0; i < numPolicies; i++) {
+        for (int j = i + 1; j < numPolicies; j++) {
+            if (policies[i].insuranceAmount < policies[j].insuranceAmount) {
+                temp = policies[j];
+                policies[j] = policies[i];
+                policies[i] = temp;
+            }
+        }
+    }
+    cout << "Данные отсортированы." << endl;
+}
+
+//Сортировка страховой премии по возрастанию выполняется аналогично
+void SortPremiumAZ(Policy* policies, int numPolicies) {
+    for (int i = 0; i < numPolicies; i++) {
+        for (int j = i + 1; j < numPolicies; j++) {
+            if (policies[i].insurancePremium > policies[j].insurancePremium) {
+                temp = policies[j];
+                policies[j] = policies[i];
+                policies[i] = temp;
+            }
+        }
+    }
+    cout << "Данные отсортированы." << endl;
+}
+
+//Сортировка страховой премии по убыванию выполняется аналогично
+void SortPremiumZA(Policy* policies, int numPolicies) {
+    for (int i = 0; i < numPolicies; i++) {
+        for (int j = i + 1; j < numPolicies; j++) {
+            if (policies[i].insurancePremium < policies[j].insurancePremium) {
+                temp = policies[j];
+                policies[j] = policies[i];
+                policies[i] = temp;
+            }
+        }
+    }
+    cout << "Данные отсортированы." << endl;
+}
+
+//Вспомогательная функция, которая взаимодействует с пользователем для сортировки полисов
+void Sort(Policy* policies, int numPolicies) {
+    int s{};
+    cout << "\t\t\t-------------<<<<<<<< Способы сортировки >>>>>>>>-------------" << endl;
+    cout << "\t\t\t+------------------------------------------------------------+" << endl;
+    cout << "\t\t\t|                                                            |" << endl;
+    cout << "\t\t\t|     1  - Сортировка по типу имущества (по возрастанию)     |" << endl;
+    cout << "\t\t\t|     2  - Сортировка по типу имущества (по убыванию)        |" << endl;
+    cout << "\t\t\t|     3  - Сортировка по страховой сумме (по возрастанию)    |" << endl;
+    cout << "\t\t\t|     4  - Сортировка по страховой сумме (по убыванию)       |" << endl;
+    cout << "\t\t\t|     5  - Сортировка по страховой премии (по возрастанию)   |" << endl;
+    cout << "\t\t\t|     6  - Сортировка по страховой премии (по убыванию)      |" << endl;
+    cout << "\t\t\t|     0  - Вернуться в меню                                  |" << endl;
+    cout << "\t\t\t|                                                            |" << endl;
+    cout << "\t\t\t|____________________________________________________________|" << endl;
+    cout << endl;
+    cout << "Выберите способ сортировки: ";
+    cin >> s;
+    while (s < 0 or s >6 or cin.fail() or cin.peek() != '\n') {
+        cin.clear();
+        cin.ignore(1000, '\n');
+        system("cls");
+        cout << "Некорректный ввод! Пожалуйста, попробуйте снова!" << endl;
+        cout << "\t\t\t-------------<<<<<<<< Способы сортировки >>>>>>>>-------------" << endl;
+        cout << "\t\t\t+------------------------------------------------------------+" << endl;
+        cout << "\t\t\t|                                                            |" << endl;
+        cout << "\t\t\t|     1  - Сортировка по типу имущества (по возрастанию)     |" << endl;
+        cout << "\t\t\t|     2  - Сортировка по типу имущества (по убыванию)        |" << endl;
+        cout << "\t\t\t|     3  - Сортировка по страховой сумме (по возрастанию)    |" << endl;
+        cout << "\t\t\t|     4  - Сортировка по страховой сумме (по убыванию)       |" << endl;
+        cout << "\t\t\t|     5  - Сортировка по страховой премии (по возрастанию)   |" << endl;
+        cout << "\t\t\t|     6  - Сортировка по страховой премии (по убыванию)      |" << endl;
+        cout << "\t\t\t|     0  - Вернуться в меню                                  |" << endl;
+        cout << "\t\t\t|                                                            |" << endl;
+        cout << "\t\t\t|____________________________________________________________|" << endl;
+        cout << endl << endl;
+        cout << "Выберите способ сортировки: ";
+        cin >> s;
+    }
+    switch (s) {
+    case 1:
+        system("cls");
+        SortTypeAZ(policies, numPolicies);
+        system("pause");
+        system("cls");
+        MenuOfProgram();
+        break;
+    case 2:
+        system("cls");
+        SortTypeZA(policies, numPolicies);
+        system("pause");
+        system("cls");
+        MenuOfProgram();
+        break;
+    case 3:
+        system("cls");
+        SortAmountAZ(policies, numPolicies);
+        system("pause");
+        system("cls");
+        MenuOfProgram();
+        break;
+    case 4:
+        system("cls");
+        SortAmountZA(policies, numPolicies);
+        system("pause");
+        system("cls");
+        MenuOfProgram();
+        break;
+    case 5:
+        system("cls");
+        SortPremiumAZ(policies, numPolicies);
+        system("pause");
+        system("cls");
+        MenuOfProgram();
+        break;
+    case 6:
+        system("cls");
+        SortPremiumZA(policies, numPolicies);
+        system("pause");
+        system("cls");
+        MenuOfProgram();
+        break;
+    case 0:
+        system("cls");
+        MenuOfProgram();
+        break;
+    default:
+        system("cls");
+        cout << "Такого способа сортировки не существует. Попытайтесь снова" << endl;
+        system("pause");
+        system("cls");
+        MenuOfProgram();
+    }
+}
+
+//Поиск полисов страхования по заданной площади жилья
+void searchByHouseArea(Policy* policies, int numPolicies, int searchArea) {
+    // Инициализация флага, указывающего наличие найденного полиса
+    bool found = false;
+    // Перебор всех полисов
+    for (int i = 0; i < numPolicies; i++) {
+        // Проверка соответствия площади жилья в текущем полисе заданной для поиска
+        if (policies[i].housingArea == searchArea) {
+            // Если найден первый подходящий полис, выводим заголовок
+            if (!found) {
+                cout << "Полисы с площадью жилья " << searchArea << " кв.м.:" << endl;
+                found = true;
+            }
+            cout << endl;
+            // Определение ширины строки вывода
+            const int lineWidth = 48;
+            // Вывод информации о полисе
+            cout << "Страховой полис с ID #" << policies[i].Id << endl;
+            cout << "+----------------------------------------+" << endl;
+            cout << "| ID полиса: " << policies[i].Id << string(lineWidth - 20 - to_string(policies[i].Id).length(), ' ') << "|" << endl;
+            cout << "| ФИО: " << policies[i].fullName << string(lineWidth - 14 - policies[i].fullName.length(), ' ') << "|" << endl;
+            cout << "| Номер телефона: " << policies[i].telNumber << string(lineWidth - 25 - policies[i].telNumber.length(), ' ') << "|" << endl;
+            cout << "| Вид жилья: " << policies[i].typeOfHouse << string(lineWidth - 20 - to_string(policies[i].typeOfHouse).length(), ' ') << "|" << endl;
+            cout << "| Адрес: " << policies[i].address << string(lineWidth - 16 - policies[i].address.length(), ' ') << "|" << endl;
+            cout << "| Тип имущества: " << policies[i].typeOfProperty << string(lineWidth - 24 - to_string(policies[i].typeOfProperty).length(), ' ') << "|" << endl;
+            cout << "| Год постройки: " << policies[i].yearOfConstruction << string(lineWidth - 24 - to_string(policies[i].yearOfConstruction).length(), ' ') << "|" << endl;
+            cout << "| Площадь жилья: " << policies[i].housingArea << string(lineWidth - 24 - to_string(policies[i].housingArea).length(), ' ') << "|" << endl;
+            cout << "| Страховая программа: " << policies[i].insuranceProgram << string(lineWidth - 30 - to_string(policies[i].insuranceProgram).length(), ' ') << "|" << endl;
+            cout << "| Страховая сумма: " << policies[i].insuranceAmount << string(lineWidth - 26 - to_string(policies[i].insuranceAmount).length(), ' ') << "|" << endl;
+            cout << "| Страховая премия: " << policies[i].insurancePremium << string(lineWidth - 27 - to_string(policies[i].insurancePremium).length(), ' ') << "|" << endl;
+            cout << "| Срок страхования: " << policies[i].insurancePeriod << string(lineWidth - 27 - policies[i].insurancePeriod.length(), ' ') << "|" << endl;
+            cout << "+----------------------------------------+" << endl;
+            cout << endl;
+        }
+    }
+
+    // Если после просмотра всех полисов подходящие не найдены, выводится соответствующее сообщение
+    if (!found) {
+        cout << "Не найдены страховын полисы с площадью жилья " << searchArea << " кв.м." << endl;
+    }
+}
+
+//Поиск срока страхования и вывод полисов с данным сроком
+void searchByInsurancePeriod(Policy* policies, int numPolicies) {
+    string targetPeriod; // Переменная для хранения целевого срока страхования, введенного пользователем
+    cin.ignore(); // Очистка буфера ввода
+    cout << "Введите срок страхования для поиска:" << endl; // Предложение пользователю ввести срок страхования
+    getline(cin, targetPeriod); // Получение срока страхования от пользователя
+
+    bool found = false; // Переменная для отслеживания того, были ли найдены полисы с указанным сроком страхования
+    // Проход по всем полисам в массиве
+    for (int i = 0; i < numPolicies; ++i) {
+        // Если срок страхования текущего полиса совпадает с целевым сроком страхования
+        if (policies[i].insurancePeriod == targetPeriod) {
+            // Если это первый найденный полис с таким сроком страхования
+            if (!found) {
+                cout << endl;
+                cout << "Полис(a) со сроком страхования " << targetPeriod << ":" << endl;
+                found = true; // Установить флаг найденного полиса
+            }
+            cout << endl;
+            const int lineWidth = 48; // Ширина строки для вывода информации о полисе
+            // Вывод информации о полисе в виде таблицы
+            cout << "Страховой полис с ID #" << policies[i].Id << endl;
+            cout << "+----------------------------------------+" << endl;
+            cout << "| ID полиса: " << policies[i].Id << string(lineWidth - 20 - to_string(policies[i].Id).length(), ' ') << "|" << endl;
+            cout << "| ФИО: " << policies[i].fullName << string(lineWidth - 14 - policies[i].fullName.length(), ' ') << "|" << endl;
+            cout << "| Номер телефона: " << policies[i].telNumber << string(lineWidth - 25 - policies[i].telNumber.length(), ' ') << "|" << endl;
+            cout << "| Вид жилья: " << policies[i].typeOfHouse << string(lineWidth - 20 - to_string(policies[i].typeOfHouse).length(), ' ') << "|" << endl;
+            cout << "| Адрес: " << policies[i].address << string(lineWidth - 16 - policies[i].address.length(), ' ') << "|" << endl;
+            cout << "| Тип имущества: " << policies[i].typeOfProperty << string(lineWidth - 24 - to_string(policies[i].typeOfProperty).length(), ' ') << "|" << endl;
+            cout << "| Год постройки: " << policies[i].yearOfConstruction << string(lineWidth - 24 - to_string(policies[i].yearOfConstruction).length(), ' ') << "|" << endl;
+            cout << "| Площадь жилья: " << policies[i].housingArea << string(lineWidth - 24 - to_string(policies[i].housingArea).length(), ' ') << "|" << endl;
+            cout << "| Страховая программа: " << policies[i].insuranceProgram << string(lineWidth - 30 - to_string(policies[i].insuranceProgram).length(), ' ') << "|" << endl;
+            cout << "| Страховая сумма: " << policies[i].insuranceAmount << string(lineWidth - 26 - to_string(policies[i].insuranceAmount).length(), ' ') << "|" << endl;
+            cout << "| Страховая премия: " << policies[i].insurancePremium << string(lineWidth - 27 - to_string(policies[i].insurancePremium).length(), ' ') << "|" << endl;
+            cout << "| Срок страхования: " << policies[i].insurancePeriod << string(lineWidth - 27 - policies[i].insurancePeriod.length(), ' ') << "|" << endl;
+            cout << "+----------------------------------------+" << endl;
+            cout << endl;
+        }
+    }
+    // Если не было найдено ни одного полиса с указанным сроком страхования
+    if (!found) {
+        cout << "Не найдены страховые полисы с данным сроком страхования." << endl;
+    }
+}
+
+//Поиск максимальной страховой премии
+int findMaxInsuranceSumByPremium(Policy* policies, int numPolicies) {
+    int index{}; // Индекс полиса с максимальной страховой премией
+    if (numPolicies == 0) return -1; // Если нет полисов, возвращается -1
+
+    // Инициализация максимальной страховой премии и максимальной суммы страхования
+    int maxPremium = policies[0].insurancePremium;
+    int maxInsuranceSum = policies[0].insuranceAmount;
+
+    // Проход по массиву полисов начиная со второго элемента
+    for (int i = 1; i < numPolicies; i++) {
+        // Если текущая страховая премия больше максимальной
+        if (policies[i].insurancePremium > maxPremium) {
+            // Обновление максимальной страховой премии и максимальной суммы страхования
+            maxPremium = policies[i].insurancePremium;
+            maxInsuranceSum = policies[i].insuranceAmount;
+            index = i; // Обновление индекса полиса с максимальной страховой премией
+        }
+    }
+    const int lineWidth = 48; // Ширина строки для вывода информации о полисе
+    // Вывод информации о полисе с максимальной страховой премией
+    cout << "Страховой полис с ID #" << policies[index].Id << endl;
+    cout << "+----------------------------------------+" << endl;
+    cout << "| ID полиса: " << policies[index].Id << string(lineWidth - 20 - to_string(policies[index].Id).length(), ' ') << "|" << endl;
+    cout << "| ФИО: " << policies[index].fullName << string(lineWidth - 14 - policies[index].fullName.length(), ' ') << "|" << endl;
+    cout << "| Номер телефона: " << policies[index].telNumber << string(lineWidth - 25 - policies[index].telNumber.length(), ' ') << "|" << endl;
+    cout << "| Вид жилья: " << policies[index].typeOfHouse << string(lineWidth - 20 - to_string(policies[index].typeOfHouse).length(), ' ') << "|" << endl;
+    cout << "| Адрес: " << policies[index].address << string(lineWidth - 16 - policies[index].address.length(), ' ') << "|" << endl;
+    cout << "| Тип имущества: " << policies[index].typeOfProperty << string(lineWidth - 24 - to_string(policies[index].typeOfProperty).length(), ' ') << "|" << endl;
+    cout << "| Год постройки: " << policies[index].yearOfConstruction << string(lineWidth - 24 - to_string(policies[index].yearOfConstruction).length(), ' ') << "|" << endl;
+    cout << "| Площадь жилья: " << policies[index].housingArea << string(lineWidth - 24 - to_string(policies[index].housingArea).length(), ' ') << "|" << endl;
+    cout << "| Страховая программа: " << policies[index].insuranceProgram << string(lineWidth - 30 - to_string(policies[index].insuranceProgram).length(), ' ') << "|" << endl;
+    cout << "| Страховая сумма: " << policies[index].insuranceAmount << string(lineWidth - 26 - to_string(policies[index].insuranceAmount).length(), ' ') << "|" << endl;
+    cout << "| Страховая премия: " << policies[index].insurancePremium << string(lineWidth - 27 - to_string(policies[index].insurancePremium).length(), ' ') << "|" << endl;
+    cout << "| Срок страхования: " << policies[index].insurancePeriod << string(lineWidth - 27 - policies[index].insurancePeriod.length(), ' ') << "|" << endl;
+    cout << "+----------------------------------------+" << endl;
+    cout << endl;
+    return maxInsuranceSum; // Возвращается максимальная сумма страхования
+}
+
+//Поиск минимальной страховой премии
+int findMinInsuranceSumByPremium(Policy* policies, int numPolicies) {
+    int index{}; // Индекс полиса с минимальной страховой премией
+    if (numPolicies == 0) return -1; // Если нет полисов, возвращается -1
+
+    // Инициализация минимальной страховой премии и максимальной суммы страхования
+    int minPremium = policies[0].insurancePremium;
+    int minInsuranceSum = policies[0].insuranceAmount;
+
+    // Проход по массиву полисов начиная со второго элемента
+    for (int i = 1; i < numPolicies; i++) {
+        // Если текущая страховая премия меньше минимальной
+        if (policies[i].insurancePremium < minPremium) {
+            // Обновление минимальной страховой премии и минимальной суммы страхования
+            minPremium = policies[i].insurancePremium;
+            minInsuranceSum = policies[i].insuranceAmount;
+            index = i;// Обновление индекса полиса с минимальной страховой премией
+        }
+    }
+    const int lineWidth = 48;
+    // Вывод информации о полисе с минимальной страховой премией
+    cout << "Страховой полис с ID #" << policies[index].Id << endl;
+    cout << "+----------------------------------------+" << endl;
+    cout << "| ID полиса: " << policies[index].Id << string(lineWidth - 20 - to_string(policies[index].Id).length(), ' ') << "|" << endl;
+    cout << "| ФИО: " << policies[index].fullName << string(lineWidth - 14 - policies[index].fullName.length(), ' ') << "|" << endl;
+    cout << "| Номер телефона: " << policies[index].telNumber << string(lineWidth - 25 - policies[index].telNumber.length(), ' ') << "|" << endl;
+    cout << "| Вид жилья: " << policies[index].typeOfHouse << string(lineWidth - 20 - to_string(policies[index].typeOfHouse).length(), ' ') << "|" << endl;
+    cout << "| Адрес: " << policies[index].address << string(lineWidth - 16 - policies[index].address.length(), ' ') << "|" << endl;
+    cout << "| Тип имущества: " << policies[index].typeOfProperty << string(lineWidth - 24 - to_string(policies[index].typeOfProperty).length(), ' ') << "|" << endl;
+    cout << "| Год постройки: " << policies[index].yearOfConstruction << string(lineWidth - 24 - to_string(policies[index].yearOfConstruction).length(), ' ') << "|" << endl;
+    cout << "| Площадь жилья: " << policies[index].housingArea << string(lineWidth - 24 - to_string(policies[index].housingArea).length(), ' ') << "|" << endl;
+    cout << "| Страховая программа: " << policies[index].insuranceProgram << string(lineWidth - 30 - to_string(policies[index].insuranceProgram).length(), ' ') << "|" << endl;
+    cout << "| Страховая сумма: " << policies[index].insuranceAmount << string(lineWidth - 26 - to_string(policies[index].insuranceAmount).length(), ' ') << "|" << endl;
+    cout << "| Страховая премия: " << policies[index].insurancePremium << string(lineWidth - 27 - to_string(policies[index].insurancePremium).length(), ' ') << "|" << endl;
+    cout << "| Срок страхования: " << policies[index].insurancePeriod << string(lineWidth - 27 - policies[index].insurancePeriod.length(), ' ') << "|" << endl;
+    cout << "+----------------------------------------+" << endl;
+    cout << endl;
+    return minInsuranceSum;// Возвращается минимальная сумма страхования
+}
+
+//Функция, возвращающая минимальную страховую премию
+void FindMinInsurSumByPremium(Policy* policies, int numPolicies) {
+    int minInsuranceSum = findMinInsuranceSumByPremium(policies, numPolicies);
+    if (minInsuranceSum != -1) {
+        cout << "Минимальная страховая сумма, основанная на страховых взносах, составляет: " << minInsuranceSum << endl;
+    }
+    else {
+        cout << "Нет полисов для определения минимальной страховой суммы." << endl;
+    }
+}
+
+//Вспомогательная функция, которая взаимодействует с пользователем для поиска полисов по определенному запросу
+void Find(Policy* policies, int numPolicies) {
+    int s{}, searchArea{};
+    cout << "\t\t\t-----------<<<<<< Способы поиска >>>>>>-------------" << endl;
+    cout << "\t\t\t+--------------------------------------------------+" << endl;
+    cout << "\t\t\t|                                                  |" << endl;
+    cout << "\t\t\t|     1  - Поиск страховой премии (min)            |" << endl;
+    cout << "\t\t\t|     2  - Поиск страховой премии (max)            |" << endl;
+    cout << "\t\t\t|     3  - Поиск площади жилья                     |" << endl;
+    cout << "\t\t\t|     4  - Поиск срока страхования                 |" << endl;
+    cout << "\t\t\t|     0  - Вернуться в меню                        |" << endl;
+    cout << "\t\t\t|                                                  |" << endl;
+    cout << "\t\t\t|__________________________________________________|" << endl;
+    cout << endl;
+    cout << "Выберите способ поиска: ";
+    cin >> s;
+    while (s < 0 or s >4 or cin.fail() or cin.peek() != '\n') {
+        cin.clear();
+        cin.ignore(1000, '\n');
+        system("cls");
+        cout << "Некорректный ввод! Пожалуйста, попробуйте снова." << endl;
+        cout << "\t\t\t-----------<<<<<< Способы поиска >>>>>>-------------" << endl;
+        cout << "\t\t\t+--------------------------------------------------+" << endl;
+        cout << "\t\t\t|                                                  |" << endl;
+        cout << "\t\t\t|     1  - Поиск страховой премии (min)            |" << endl;
+        cout << "\t\t\t|     2  - Поиск страховой премии (max)            |" << endl;
+        cout << "\t\t\t|     3  - Поиск площади жилья                     |" << endl;
+        cout << "\t\t\t|     4  - Поиск срока страхования                 |" << endl;
+        cout << "\t\t\t|     0  - Вернуться в меню                        |" << endl;
+        cout << "\t\t\t|                                                  |" << endl;
+        cout << "\t\t\t|__________________________________________________|" << endl;
+        cout << endl << endl;
+        cout << "Выберите способ поиска: ";
+        cin >> s;
+    }
+    switch (s) {
+    case 1:
+        system("cls");
+        FindMinInsurSumByPremium(policies, numPolicies);
+        system("pause");
+        system("cls");
+        MenuOfProgram();
+        break;
+    case 2:
+        system("cls");
+        findMaxInsuranceSumByPremium(policies, numPolicies);
+        system("pause");
+        system("cls");
+        MenuOfProgram();
+        break;
+    case 3:
+        system("cls");
+        cout << "Введите площадь жилья для поиска: ";
+        cin >> searchArea;
+        searchByHouseArea(policies, numPolicies, searchArea);
+        system("pause");
+        system("cls");
+        MenuOfProgram();
+        break;
+    case 4:
+        system("cls");
+        searchByInsurancePeriod(policies, numPolicies);
+        system("pause");
+        system("cls");
+        MenuOfProgram();
+        break;
+    case 0:
+        system("cls");
+        MenuOfProgram();
+        break;
+    default:
+        system("cls");
+        cout << "Команды не существует. Пробовать снова" << endl;
+        system("pause");
+        system("cls");
+        MenuOfProgram();
+    }
+}
+
+//Функция предназначена для расчёта и вывода процентного распределения различных страховых программ в предоставленном массиве полисов
+void calculateInsurProgramPercentage(const Policy policies[], int numPolicies) {
+    unordered_map<int, int> insuranceProgramCounter;
+    double total = 0; //переменная для подсчёта общего количества политик
+    for (int i = 0; i < numPolicies; ++i) {
+        insuranceProgramCounter[policies[i].insuranceProgram]++;
+        total++;
+    }
+    cout << "+----------------------------------------------+" << endl;
+    cout << "| Процентное соотношение страховых программ:   |" << endl;
+    for (const auto& program : insuranceProgramCounter) {
+        double percentage = static_cast<double>(program.second) / total * 100; //для каждой страховой программы вычисляется процентное соотношение от общего числа политик и выводится на экран
+        cout << "| Program " << program.first << ": " << fixed << setprecision(2) << percentage << "%                            |" << endl;
+    }
+    cout << "+----------------------------------------------+" << "\n\n";
+}
+
+//Вывод всех сформированных полисов в виде отдельных прямоугольников
+void formedPolicies(Policy* policies, int numPolicies) {
+    for (int i{}; i < numPolicies; i++) {
+        const int lineWidth = 48;
+        cout << "Страховой полис с ID #" << policies[i].Id << endl;
+        cout << "+----------------------------------------+" << endl;
+        cout << "| ID полиса: " << policies[i].Id << string(lineWidth - 20 - to_string(policies[i].Id).length(), ' ') << "|" << endl;
+        cout << "| ФИО: " << policies[i].fullName << string(lineWidth - 14 - policies[i].fullName.length(), ' ') << "|" << endl;
+        cout << "| Номер телефона: " << policies[i].telNumber << string(lineWidth - 25 - policies[i].telNumber.length(), ' ') << "|" << endl;
+        cout << "| Вид жилья: " << policies[i].typeOfHouse << string(lineWidth - 20 - to_string(policies[i].typeOfHouse).length(), ' ') << "|" << endl;
+        cout << "| Адрес: " << policies[i].address << string(lineWidth - 16 - policies[i].address.length(), ' ') << "|" << endl;
+        cout << "| Тип имущества: " << policies[i].typeOfProperty << string(lineWidth - 24 - to_string(policies[i].typeOfProperty).length(), ' ') << "|" << endl;
+        cout << "| Год постройки: " << policies[i].yearOfConstruction << string(lineWidth - 24 - to_string(policies[i].yearOfConstruction).length(), ' ') << "|" << endl;
+        cout << "| Площадь жилья: " << policies[i].housingArea << string(lineWidth - 24 - to_string(policies[i].housingArea).length(), ' ') << "|" << endl;
+        cout << "| Страховая программа: " << policies[i].insuranceProgram << string(lineWidth - 30 - to_string(policies[i].insuranceProgram).length(), ' ') << "|" << endl;
+        cout << "| Страховая сумма: " << policies[i].insuranceAmount << string(lineWidth - 26 - to_string(policies[i].insuranceAmount).length(), ' ') << "|" << endl;
+        cout << "| Страховая премия: " << policies[i].insurancePremium << string(lineWidth - 27 - to_string(policies[i].insurancePremium).length(), ' ') << "|" << endl;
+        cout << "| Срок страхования: " << policies[i].insurancePeriod << string(lineWidth - 27 - policies[i].insurancePeriod.length(), ' ') << "|" << endl;
+        cout << "+----------------------------------------+" << endl;
+        cout << endl;
+    }
+}
+
+//Функция реализует добавление нового страхового полиса в динамический массив структур Policy
+void AddingPolicy(Policy*& policies, int& numPolicies) {
+    ++numPolicies; // Увеличение количества полисов на единицу для создания места под новый полис
+    bool choice{ true }; // Флаг для управления циклами ввода
+
+    // Создание временного динамического массива для хранения обновленного списка полисов, включая новый
+    Policy* NewLIST = new Policy[numPolicies];
+
+    // Копирование существующих полисов в новый массив
+    for (int i{}; i < numPolicies - 1; i++) {
+        NewLIST[i] = policies[i];
+    }
+
+    // Сбор данных для нового полиса через консольный ввод
+    while (choice) {
+        cout << "Введите данные страхователя:\nID:\n";
+        cin >> NewLIST[numPolicies - 1].Id;
+
+        // Проверка на уникальность ID полиса
+        for (int i{}; i < numPolicies - 1; i++) {
+            if (NewLIST[numPolicies - 1].Id != policies[i].Id) {
+                choice = false;
+            }
+            else {
+                choice = true;
+                break;
+            }
+        }
+        if (choice) {
+            system("cls");
+            cout << "Ошибка! Этот идентификатор уже занят!" << endl;
+        }
+    }
+    choice = true;
+
+    system("cls");
+    cin.ignore();
+    cout << "ФИО:\n";
+    getline(cin, NewLIST[numPolicies - 1].fullName);
+
+    system("cls");
+
+    cout << "Номер телефона:\n";
+    getline(cin, NewLIST[numPolicies - 1].telNumber);
+
+    // Ввод типа жилья
+    system("cls");
+    while (choice) {
+        cout << "Вид жилья:\n";
+        cout << "\t(1) - Квартира\n\t(2) - Дом\n\tВведите нужный номер >> ";
+        cin >> NewLIST[numPolicies - 1].typeOfHouse;
+
+        if (NewLIST[numPolicies - 1].typeOfHouse == 2 or NewLIST[numPolicies - 1].typeOfHouse == 1) {
+            choice = false;
+        }
+        else {
+            choice = true;
+        }
+        if (choice) {
+            system("cls");
+            cout << "Ошибка! Вы ввели неправильное значение." << endl;
+        }
+    }
+    choice = true;
+
+    system("cls");
+    cin.ignore();
+    cout << "Адрес:\n";
+    getline(cin, NewLIST[numPolicies - 1].address);
+
+    // Ввод типа недвижимости
+    system("cls");
+    while (choice) {
+        cout << "Тип имущества:\n";
+        cout << "\t(1) - Каменное\n\t(2) - Деревянное\n\tВведите нужный номер >> ";
+        cin >> NewLIST[numPolicies - 1].typeOfProperty;
+
+        if (NewLIST[numPolicies - 1].typeOfProperty == 2 or NewLIST[numPolicies - 1].typeOfProperty == 1) {
+            choice = false;
+        }
+        else {
+            choice = true;
+        }
+        if (choice) {
+            system("cls");
+            cout << "Ошибка! Вы ввели неправильное значение." << endl;
+        }
+    }
+    choice = true;
+
+    // Ввод года постройки
+    system("cls");
+    while (choice) {
+        cout << "Год постройки (до 2023 г. включительно):\n";
+        cin >> NewLIST[numPolicies - 1].yearOfConstruction;
+
+        if (NewLIST[numPolicies - 1].yearOfConstruction < 2024 and NewLIST[numPolicies - 1].yearOfConstruction > 0) {
+            choice = false;
+        }
+        else {
+            choice = true;
+        }
+        if (choice) {
+            system("cls");
+            cout << "Ошибка! Вы ввели неправильное значение." << endl;
+        }
+    }
+    choice = true;
+
+    // Ввод площади жилья
+    system("cls");
+    cout << "Площадь жилья:\n";
+    cin >> NewLIST[numPolicies - 1].housingArea;
+
+    // Ввод типа страховой программы
+    system("cls");
+    while (choice) {
+        cout << "Страховая программа.:\n";
+        cout << "\t(1) - Эконом\n\t(2) - Стандарт\n\t(3) - Премиум\n\tВведите нужный номер >> ";
+        cin >> NewLIST[numPolicies - 1].insuranceProgram;
+
+        if (NewLIST[numPolicies - 1].insuranceProgram == 2 or NewLIST[numPolicies - 1].insuranceProgram == 1 or NewLIST[numPolicies - 1].insuranceProgram == 3) {
+            choice = false;
+        }
+        else {
+            choice = true;
+        }
+        if (choice) {
+            system("cls");
+            cout << "Ошибка! Вы ввели неправильное значение." << endl;
+        }
+    }
+    choice = true;
+
+    // Ввод суммы страхования
+    system("cls");
+    cout << "Страховая сумма:\n";
+    cin >> NewLIST[numPolicies - 1].insuranceAmount;
+
+    // Ввод страховой премии
+    system("cls");
+    cout << "Страховая премия:\n";
+    cin >> NewLIST[numPolicies - 1].insurancePremium;
+
+    cin.ignore();
+    system("cls");
+    cout << "Срок страхования:\n";
+    getline(cin, NewLIST[numPolicies - 1].insurancePeriod);
+
+    delete[] policies; // Освобождение памяти, занятой предыдущим массивом полисов
+    policies = NewLIST; // Присвоение указателю на массив нового массива
+}
+
+
+//Сохранение данных и загрузка в текстовый файл
+void SavingToTxtFile(Policy* policies, int numPolicies) {
+    //setlocale(0, "rus");
+    //SetConsoleCP(1251);
+    //SetConsoleOutputCP(1251);
+    ofstream fout; // Поток для записи данных в файл
+    fout.open("C:/PPolic.txt"); // Открытие файла для записи
+    if (fout.is_open()) // Проверка успешного открытия файла
+    {
+        // Запись данных о каждом полисе в файл
+        for (int i{}; i < numPolicies; i++) {
+            fout << policies[i].Id << "," << policies[i].fullName << "," << policies[i].telNumber << "," << policies[i].typeOfHouse << "," << policies[i].address << "," << policies[i].typeOfProperty << "," << policies[i].yearOfConstruction << "," << policies[i].housingArea << "," << policies[i].insuranceProgram << "," << policies[i].insuranceAmount << "," << policies[i].insurancePremium << "," << policies[i].insurancePeriod << endl;
+        }
+    }
+    fout.close(); // Закрытие файла
+}
+
+
+int main() {
+    SetConsoleCP(1251);
+    SetConsoleOutputCP(1251);
+
+    string filename = "c:/PPolic.txt";
+    Policy* policies = new Policy[MAX_POLICIES];
+    int item{};
+    MenuOfProgram();
+    int numPolicies = loadPoliciesFromFile(filename, policies, MAX_POLICIES);
+    do {
+        cin >> item;
+        while (cin.fail() or cin.peek() != '\n') {
+            cin.clear();
+            cin.ignore(1000, '\n');
+            system("cls");
+            MenuOfProgram();
+            cin >> item;
+        }
+        switch (item) {
+        case 1:
+            system("cls");
+            if (numPolicies != 0) {
+                TableOfData(policies, numPolicies);
+            }
+            else {
+                cout << "Нет данных о полисах" << endl;
+            }
+            system("pause");
+            system("cls");
+            MenuOfProgram();
+            break;
+        case 2:
+            system("cls");
+            AddingPolicy(policies, numPolicies);
+            system("cls");
+            MenuOfProgram();
+            break;
+        case 3:
+            system("cls");
+            Find(policies, numPolicies);
+            system("cls");
+            MenuOfProgram();
+            break;
+        case 4:
+            system("cls");
+            if (numPolicies != 0) {
+                TableOfData(policies, numPolicies);
+                DeletePolicy(policies, numPolicies);
+                TableOfData(policies, numPolicies);
+            }
+            else {
+                cout << "Нет данных о полисах" << endl;
+            }
+            system("pause");
+            system("cls");
+            MenuOfProgram();
+            break;
+        case 5:
+            system("cls");
+            if (numPolicies != 0) {
+                Sort(policies, numPolicies);
+            }
+            else {
+                cout << "Нет данных о полисах" << endl;
+            }
+            system("cls");
+            MenuOfProgram();
+            break;
+        case 6:
+            system("cls");
+            if (numPolicies != 0) {
+                calculateInsurProgramPercentage(policies, numPolicies);
+            }
+            else {
+                cout << "Нет данных о полисах" << endl;
+            }
+            system("pause");
+            system("cls");
+            MenuOfProgram();
+            break;
+        case 7:
+            system("cls");
+            formedPolicies(policies, numPolicies);
+            system("pause");
+            system("cls");
+            MenuOfProgram();
+            break;
+        case 0:
+            system("cls");
+            SavingToTxtFile(policies, numPolicies);
+            cout << "До свидания! Мы надеемся увидеть вас снова!" << endl;
+            system("pause");
+            system("cls");
+            break;
+        }
+    } while (item != 0);
+    return 0;
+}
